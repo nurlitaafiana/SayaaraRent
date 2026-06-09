@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\RentalService;
-use App\Models\Kategori;
 use App\Http\Requests\StoreRentalRequest;
+use App\Models\Kategori;
 use App\Models\Kendaraan;
+use App\Services\RentalService;
+use Illuminate\Http\Request;
 
 class RentalController extends Controller
 {
@@ -17,7 +17,7 @@ class RentalController extends Controller
     public function index()
     {
         if (auth()->user()->role === 'admin') {
-            $rentals = $this->rentalService->getAllRentals();
+            $rentals = $this->rentalService->getAllRentals(request('status'));
             return view('admin.rental', compact('rentals'));
         }
 
@@ -82,8 +82,15 @@ class RentalController extends Controller
         return redirect()->back()->with('success', 'Rental telah selesai.');
     }
 
+    public function resetStatus(Request $request, $id)
+    {
+        $this->rentalService->resetRentalStatus($id, $request->status);
+        return redirect()->back()->with('success', 'Status rental berhasil diubah.');
+    }
+
     public function customerDashboard()
     {
+        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         return view('customer.dashboard', [

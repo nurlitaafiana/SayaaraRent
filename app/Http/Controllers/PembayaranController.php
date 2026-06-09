@@ -49,8 +49,7 @@ class PembayaranController extends Controller
 
     public function adminIndex()
     {
-        $payments = $this->pembayaranService->getPendingPayments();
-
+        $payments = $this->pembayaranService->getAllPayments(); // ganti ini
         return view('admin.pembayaran.index', compact('payments'));
     }
 
@@ -74,4 +73,6 @@ class PembayaranController extends Controller
 
         return back()->with('success', 'Pembayaran berhasil ditolak');
     }
+
+    
 }

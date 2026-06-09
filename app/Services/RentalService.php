@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Exceptions\RentalException;
-use App\Repositories\Contracts\RentalRepositoryInterface;
-use App\Models\Kendaraan;
 use App\Models\DetailRental;
+use App\Models\Kendaraan;
 use App\Models\Rental;
+use App\Repositories\Contracts\RentalRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
 class RentalService
@@ -25,6 +26,17 @@ class RentalService
         return $this->rentalRepository->findByStatus('active');
     }
 
+    public function getAllRentals(?string $status = null)
+    {
+        $query = Rental::with(['user', 'detailRental.kendaraan'])->latest();
+
+        if ($status && $status !== 'semua') {
+            $query->where('status', $status);
+        }
+
+        return $query->get();
+    }
+
     public function getRentalsByUser(int $userId, ?string $status = null)
     {
         $query = Rental::where('user_id', $userId)
@@ -38,30 +50,21 @@ class RentalService
         return $query->get();
     }
 
-    public function findById(int $id)
-    {
-        return $this->rentalRepository->findById($id);
-    }
-
-    public function getAllRentals()
-    {
-        return Rental::with(['user', 'detailRental.kendaraan'])
-            ->latest()
-            ->get();
-    }
-
     public function getActiveRentalsByUser(int $userId)
     {
         return $this->rentalRepository->findActiveByUserId($userId);
     }
 
+    public function findById(int $id)
+    {
+        return $this->rentalRepository->findById($id);
+    }
+
     public function isKendaraanAvailable(int $kendaraanId, string $mulai, string $selesai): bool
     {
         return !DetailRental::where('kendaraan_id', $kendaraanId)
-            ->whereHas('rental', fn($q) => $q->whereIn('status', [
-                'pending_verification', 'waiting_payment', 'active'
-            ]))
             ->whereHas('rental', fn($q) => $q
+                ->whereIn('status', ['pending_verification', 'waiting_payment', 'active'])
                 ->where('tanggal_mulai', '<=', $selesai)
                 ->where('tanggal_selesai', '>=', $mulai)
             )
@@ -106,8 +109,8 @@ class RentalService
         }
 
         $kendaraan  = Kendaraan::findOrFail($data['kendaraan_id']);
-        $mulai      = \Carbon\Carbon::parse($data['tanggal_mulai']);
-        $selesai    = \Carbon\Carbon::parse($data['tanggal_selesai']);
+        $mulai      = Carbon::parse($data['tanggal_mulai']);
+        $selesai    = Carbon::parse($data['tanggal_selesai']);
         $jumlahHari = $mulai->diffInDays($selesai) ?: 1;
         $subtotal   = $kendaraan->harga_sewa_per_hari * $jumlahHari;
 
@@ -137,8 +140,13 @@ class RentalService
     {
         $rental = $this->rentalRepository->findById($rentalId);
 
-        if (!$rental) throw new RentalException('Rental tidak ditemukan');
-        if ($rental->status !== 'pending_verification') throw new RentalException('Hanya rental pending yang dapat diverifikasi');
+        if (!$rental) {
+            throw new RentalException('Rental tidak ditemukan');
+        }
+
+        if ($rental->status !== 'pending_verification') {
+            throw new RentalException('Hanya rental pending yang dapat diverifikasi');
+        }
 
         return $this->rentalRepository->update($rentalId, ['status' => 'waiting_payment']);
     }
@@ -147,8 +155,13 @@ class RentalService
     {
         $rental = $this->rentalRepository->findById($rentalId);
 
-        if (!$rental) throw new RentalException('Rental tidak ditemukan');
-        if ($rental->status !== 'pending_verification') throw new RentalException('Hanya rental pending yang dapat ditolak');
+        if (!$rental) {
+            throw new RentalException('Rental tidak ditemukan');
+        }
+
+        if ($rental->status !== 'pending_verification') {
+            throw new RentalException('Hanya rental pending yang dapat ditolak');
+        }
 
         return $this->rentalRepository->update($rentalId, [
             'status'        => 'rejected',
@@ -160,8 +173,13 @@ class RentalService
     {
         $rental = $this->rentalRepository->findById($rentalId);
 
-        if (!$rental) throw new RentalException('Rental tidak ditemukan');
-        if (!in_array($rental->status, ['pending_verification', 'waiting_payment'])) throw new RentalException('Rental tidak dapat dibatalkan');
+        if (!$rental) {
+            throw new RentalException('Rental tidak ditemukan');
+        }
+
+        if (!in_array($rental->status, ['pending_verification', 'waiting_payment'])) {
+            throw new RentalException('Rental tidak dapat dibatalkan');
+        }
 
         return $this->rentalRepository->update($rentalId, ['status' => 'cancelled']);
     }
@@ -170,10 +188,39 @@ class RentalService
     {
         $rental = $this->rentalRepository->findById($rentalId);
 
-        if (!$rental) throw new RentalException('Rental tidak ditemukan');
-        if ($rental->status !== 'active') throw new RentalException('Hanya rental aktif yang dapat diselesaikan');
+        if (!$rental) {
+            throw new RentalException('Rental tidak ditemukan');
+        }
+
+        if ($rental->status !== 'active') {
+            throw new RentalException('Hanya rental aktif yang dapat diselesaikan');
+        }
 
         return $this->rentalRepository->update($rentalId, ['status' => 'completed']);
+    }
+
+    public function resetRentalStatus(int $rentalId, string $status)
+    {
+        $allowedStatus = [
+            'pending_verification',
+            'waiting_payment',
+            'active',
+            'completed',
+            'rejected',
+            'cancelled',
+        ];
+
+        if (!in_array($status, $allowedStatus)) {
+            throw new RentalException('Status tidak valid');
+        }
+
+        $rental = $this->rentalRepository->findById($rentalId);
+
+        if (!$rental) {
+            throw new RentalException('Rental tidak ditemukan');
+        }
+
+        return $this->rentalRepository->update($rentalId, ['status' => $status]);
     }
 
     public function getBookedDatesByKendaraan(int $kendaraanId): array
@@ -187,9 +234,9 @@ class RentalService
 
         $dates = [];
         foreach ($rentals as $detail) {
-            $start   = \Carbon\Carbon::parse($detail->rental->tanggal_mulai);
-            $end     = \Carbon\Carbon::parse($detail->rental->tanggal_selesai);
-            $current = $start->copy();
+            $current = Carbon::parse($detail->rental->tanggal_mulai);
+            $end     = Carbon::parse($detail->rental->tanggal_selesai);
+
             while ($current->lte($end)) {
                 $dates[] = $current->format('Y-m-d');
                 $current->addDay();

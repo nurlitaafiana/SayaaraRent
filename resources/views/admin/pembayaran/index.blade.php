@@ -46,9 +46,9 @@
 
                 @forelse($filtered as $payment)
                 <tr>
-                    <td class="p-3">#{{ $payment->id }}</td>
+                    <td class="p-3">{{ $payment->id }}</td>
                     <td class="p-3">{{ $payment->rental->user->name ?? '-' }}</td>
-                    <td class="p-3">#{{ $payment->rental_id }}</td>
+                    <td class="p-3">{{ $payment->rental_id }}</td>
                     <td class="p-3">Rp {{ number_format($payment->jumlah_bayar, 0, ',', '.') }}</td>
                     <td class="p-3">
                         <a href="{{ asset('storage/' . $payment->bukti_pembayaran) }}"

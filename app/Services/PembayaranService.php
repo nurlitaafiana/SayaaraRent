@@ -112,4 +112,11 @@ class PembayaranService
             throw new PembayaranException('Hanya pembayaran pending yang bisa diproses');
         }
     }
+
+    public function getAllPayments()
+    {
+        return Pembayaran::with(['rental.user', 'rental.detailRental.kendaraan'])
+            ->latest()
+            ->get();
+    }
 }
