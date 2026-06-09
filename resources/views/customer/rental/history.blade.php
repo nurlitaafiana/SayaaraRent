@@ -57,7 +57,7 @@ $statusBadge = [
         @endphp
         <a href="{{ request()->fullUrlWithQuery(['status' => $key]) }}"
            class="badge rounded-pill px-3 py-2 text-decoration-none"
-           style="font-size: 0.8rem; font-weight: 500; cursor: pointer; {{ $pillStyle }}">
+           style="font-size: 0.8rem; font-weight: 500; cursor: pointer; {{ $pillStyle }}"
             {{ $label }}
         </a>
     @endforeach
@@ -88,7 +88,7 @@ $statusBadge = [
                         <td class="px-4 py-3">{{ Carbon::parse($rental->tanggal_selesai)->translatedFormat('d M Y') }}</td>
                         <td class="px-4 py-3 fw-semibold">Rp {{ number_format($rental->total_harga, 0, ',', '.') }}</td>
                         <td class="px-4 py-3">
-                            <span class="badge rounded-pill px-3 py-2" style="{{ $badgeStyle }}">
+                            <span class="badge rounded-pill px-3 py-2" style="<? $badgeStyle ?>">
                                 {{ $badge['label'] }}
                             </span>
                         </td>

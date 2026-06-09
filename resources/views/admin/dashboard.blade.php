@@ -325,7 +325,7 @@
             </div>
             <div class="notif-right">
                 <span class="notif-time">{{ $rental->created_at->diffForHumans() }}</span>
-                <a href="{{ route('admin.rental.show', $rental->id) }}" class="notif-btn">
+                <a href="{{ route('admin.rental.index', $rental->id) }}" class="notif-btn">
                     Verifikasi →
                 </a>
             </div>
@@ -361,7 +361,7 @@
             </div>
             <div class="notif-right">
                 <span class="notif-time">{{ $bayar->created_at->diffForHumans() }}</span>
-                <a href="{{ route('admin.pembayaran.show', $bayar->id) }}" class="notif-btn">
+                <a href="{{ route('admin.pembayaran.index', $bayar->id) }}" class="notif-btn">
                     Konfirmasi →
                 </a>
             </div>

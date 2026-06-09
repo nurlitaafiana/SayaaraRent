@@ -27,21 +27,21 @@
     <table style="width:100%; border-collapse:collapse; font-size:13px;">
         <thead>
             <tr style="background:#f8faff; border-bottom:0.5px solid #e2e8f0;">
-                <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">ID</th>
+                <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">No</th>
                 <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Foto</th>
+                <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Status</th>
                 <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Nama Mobil</th>
-                <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Merk</th>
+                <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Plat Nomor</th>
                 <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Kategori</th>
                 <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Plat Nomor</th>
                 <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Harga/Hari</th>
-                <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Status</th>
                 <th style="padding:12px 16px; font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Aksi</th>
             </tr>
         </thead>
         <tbody>
             @forelse($kendaraans as $kendaraan)
             <tr style="border-bottom:0.5px solid #f0f4fa; transition:background 0.15s;" onmouseover="this.style.background='#f8fbff'" onmouseout="this.style.background=''">
-                <td style="padding:14px 16px; color:#94a3b8; font-size:12px; font-family:monospace; font-weight:700;">#{{ str_pad($kendaraan->id, 3, '0', STR_PAD_LEFT) }}</td>
+                <td style="padding:14px 16px; color:#94a3b8; font-size:12px; font-family:monospace; font-weight:700;">{{ str_pad($kendaraan->id, 3, '0', STR_PAD_LEFT) }}</td>
                 <td style="padding:14px 16px;">
                     @if($kendaraan->gambar)
                         <img src="{{ asset('storage/' . $kendaraan->gambar) }}" width="72" height="52" style="object-fit:cover; border-radius:8px; border:0.5px solid #e2e8f0;">
@@ -51,11 +51,7 @@
                         </div>
                     @endif
                 </td>
-                <td style="padding:14px 16px; font-weight:600; color:#0d1b2a;">{{ $kendaraan->nama_mobil }}</td>
-                <td style="padding:14px 16px; color:#64748b;">{{ $kendaraan->merk }}</td>
-                <td style="padding:14px 16px; color:#64748b;">{{ $kendaraan->kategori->nama_kategori ?? '-' }}</td>
-                <td style="padding:14px 16px; color:#64748b; font-family:monospace; font-size:12px;">{{ $kendaraan->plat_nomor }}</td>
-                <td style="padding:14px 16px; font-weight:700; color:#0d1b2a;">Rp {{ number_format($kendaraan->harga_sewa_per_hari, 0, ',', '.') }}</td>
+
                 <td style="padding:14px 16px;">
                     @if($kendaraan->status == 'tersedia')
                         <span style="background:#e8f5ee; color:#16713e; font-size:10px; font-weight:600; padding:4px 10px; border-radius:20px;">Tersedia</span>
@@ -65,6 +61,12 @@
                         <span style="background:#f1f5f9; color:#64748b; font-size:10px; font-weight:600; padding:4px 10px; border-radius:20px;">{{ $kendaraan->status }}</span>
                     @endif
                 </td>
+                <td style="padding:14px 16px; font-weight:600; color:#0d1b2a;">{{ $kendaraan->nama_mobil }}</td>
+                <td style="padding:14px 16px; color:#64748b;">{{ $kendaraan->merk }}</td>
+                <td style="padding:14px 16px; color:#64748b;">{{ $kendaraan->kategori->nama_kategori ?? '-' }}</td>
+                <td style="padding:14px 16px; color:#64748b; font-family:monospace; font-size:12px;">{{ $kendaraan->plat_nomor }}</td>
+                <td style="padding:14px 16px; font-weight:700; color:#0d1b2a;">Rp {{ number_format($kendaraan->harga_sewa_per_hari, 0, ',', '.') }}</td>
+            
                 <td style="padding:14px 16px;">
                     <div style="display:flex; gap:6px; align-items:center;">
                         <a href="{{ route('admin.kendaraan.edit', $kendaraan->id) }}"
